@@ -7,6 +7,8 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	"github.com/direwen/flashpaper/internal/models"
 )
 
 // Define & Export Global DB instance
@@ -30,6 +32,14 @@ func ConnectDB() {
 	if err != nil {
 		log.Fatal("Failed to connect to database: ", err)
 	}
+
+	//Migrate models
+	log.Println("Running Migrations")
+	err = DB.AutoMigrate(&models.User{})
+	if err != nil {
+		log.Fatal("Failed to migrate models: ", err)
+	}
+	log.Println("Migrations ran successfully")
 
 	log.Println("Connected to database successfully")
 }
