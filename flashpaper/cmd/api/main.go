@@ -9,6 +9,8 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/direwen/flashpaper/internal/config"
+	"github.com/direwen/flashpaper/internal/handlers"
+	"github.com/direwen/flashpaper/internal/services"
 )
 
 func main() {
@@ -19,6 +21,10 @@ func main() {
 
 	// Init Database Connection
 	config.ConnectDB()
+
+	// Init Layers
+	authService := services.NewAuthService()
+	authHandler := handlers.NewAuthHandler(authService)
 
 	// Init Gin Router
 	r := gin.Default()
@@ -31,6 +37,10 @@ func main() {
 				"message":  "Systems Nominal. Ready to Burn.",
 			})
 		})
+	}
+
+	{
+		r.POST("/auth/register", authHandler.Register)
 	}
 
 	// Get port from env or default to 8080
