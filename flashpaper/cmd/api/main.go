@@ -41,6 +41,7 @@ func main() {
 
 	{
 		r.POST("/auth/register", authHandler.Register)
+		r.POST("/auth/login", authHandler.Login)
 	}
 
 	// Get port from env or default to 8080

@@ -7,6 +7,7 @@ import (
 
 	"github.com/direwen/flashpaper/internal/config"
 	"github.com/direwen/flashpaper/internal/models"
+	"github.com/direwen/flashpaper/pkg/utils"
 )
 
 type AuthService struct{}
@@ -41,5 +42,30 @@ func (s *AuthService) RegisterUser(email, password string) error {
 	}
 
 	return nil
+
+}
+
+func (s *AuthService) LoginUser(email, password string) (string, error) {
+	db := config.GetDB()
+	var user models.User
+
+	// Find the user record and populate "user" variable with all data included in that found record
+	if err := db.Where("email = ?", email).First(&user).Error; err != nil {
+		return "", errors.New("invalid credentials")
+	}
+
+	// Compared hashed user password and the provided password
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		return "", errors.New("invalid credentials")
+	}
+
+	// Generate jwt token
+	token, err := utils.GenerateToken(user.ID)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 
 }

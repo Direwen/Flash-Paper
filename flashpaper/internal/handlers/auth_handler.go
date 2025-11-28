@@ -43,3 +43,29 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	utils.SendMessage(c, http.StatusCreated, "User registered successfully")
 
 }
+
+type LoginRequest struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
+}
+
+func (h *AuthHandler) Login(c *gin.Context) {
+	var req LoginRequest
+
+	// Parse & Validate JSON
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.SendError(c, http.StatusBadRequest, err)
+		return
+	}
+
+	// Login
+	token, err := h.service.LoginUser(req.Email, req.Password)
+	if err != nil {
+		utils.SendError(c, http.StatusUnauthorized, err)
+		return
+	}
+
+	utils.SendSuccess(c, http.StatusOK, gin.H{
+		"token": token,
+	})
+}
