@@ -21,9 +21,10 @@ func main() {
 
 	// Init Database Connection
 	config.ConnectDB()
+	db := config.GetDB()
 
 	// Init Layers
-	authService := services.NewAuthService()
+	authService := services.NewAuthService(db)
 	authHandler := handlers.NewAuthHandler(authService)
 
 	// Init Gin Router

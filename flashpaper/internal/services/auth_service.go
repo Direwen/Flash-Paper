@@ -4,24 +4,27 @@ import (
 	"errors"
 
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 
-	"github.com/direwen/flashpaper/internal/config"
 	"github.com/direwen/flashpaper/internal/models"
 	"github.com/direwen/flashpaper/pkg/utils"
 )
 
-type AuthService struct{}
+type AuthService struct {
+	db *gorm.DB
+}
 
-func NewAuthService() *AuthService {
-	return &AuthService{}
+func NewAuthService(db *gorm.DB) *AuthService {
+	return &AuthService{
+		db: db,
+	}
 }
 
 func (s *AuthService) RegisterUser(email, password string) error {
-	db := config.GetDB()
 
 	//Checking if there's already a user with these credentials
 	var existingUser models.User
-	if err := db.Where("email = ?", email).First(&existingUser).Error; err == nil {
+	if err := s.db.Where("email = ?", email).First(&existingUser).Error; err == nil {
 		return errors.New("user with this email already exists")
 	}
 
@@ -37,7 +40,7 @@ func (s *AuthService) RegisterUser(email, password string) error {
 		Password: string(hashedPassword),
 	}
 
-	if err := db.Create(&user).Error; err != nil {
+	if err := s.db.Create(&user).Error; err != nil {
 		return err
 	}
 
@@ -46,11 +49,10 @@ func (s *AuthService) RegisterUser(email, password string) error {
 }
 
 func (s *AuthService) LoginUser(email, password string) (string, error) {
-	db := config.GetDB()
 	var user models.User
 
 	// Find the user record and populate "user" variable with all data included in that found record
-	if err := db.Where("email = ?", email).First(&user).Error; err != nil {
+	if err := s.db.Where("email = ?", email).First(&user).Error; err != nil {
 		return "", errors.New("invalid credentials")
 	}
 
