@@ -10,7 +10,9 @@ import (
 
 	"github.com/direwen/flashpaper/internal/config"
 	"github.com/direwen/flashpaper/internal/handlers"
+	"github.com/direwen/flashpaper/internal/middleware"
 	"github.com/direwen/flashpaper/internal/services"
+	"github.com/direwen/flashpaper/pkg/utils"
 )
 
 func main() {
@@ -38,11 +40,22 @@ func main() {
 				"message":  "Systems Nominal. Ready to Burn.",
 			})
 		})
-	}
-
-	{
 		r.POST("/auth/register", authHandler.Register)
 		r.POST("/auth/login", authHandler.Login)
+	}
+
+	// Protected Routes
+	protected := r.Group("/api")
+	protected.Use(middleware.AuthMiddleware())
+	{
+		protected.GET("/me", func(c *gin.Context) {
+			userID, _ := c.Get("userID")
+			utils.SendSuccess(
+				c,
+				http.StatusOK,
+				userID,
+			)
+		})
 	}
 
 	// Get port from env or default to 8080
