@@ -28,6 +28,8 @@ func main() {
 	// Init Layers
 	authService := services.NewAuthService(db)
 	authHandler := handlers.NewAuthHandler(authService)
+	snippetService := services.NewSnippetService(db)
+	snippetHandler := handlers.NewSnippetHandler(snippetService)
 
 	// Init Gin Router
 	r := gin.Default()
@@ -56,6 +58,7 @@ func main() {
 				userID,
 			)
 		})
+		protected.POST("/snippets", snippetHandler.Create)
 	}
 
 	// Get port from env or default to 8080

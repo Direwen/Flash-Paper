@@ -35,7 +35,7 @@ func ConnectDB() {
 
 	//Migrate models
 	log.Println("Running Migrations")
-	err = DB.AutoMigrate(&models.User{})
+	err = DB.AutoMigrate(&models.User{}, &models.Snippet{})
 	if err != nil {
 		log.Fatal("Failed to migrate models: ", err)
 	}
