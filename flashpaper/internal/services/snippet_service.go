@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"strings"
 	"time"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/direwen/flashpaper/pkg/utils"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type SnippetService struct {
@@ -57,4 +59,66 @@ func (s SnippetService) CreateSnippet(
 	}
 
 	return snippet, nil
+}
+
+func (s SnippetService) GetSnippet(snippetID string) (*models.Snippet, error) {
+	var snippet models.Snippet
+
+	// Validate uuid format
+	uid, err := uuid.Parse(snippetID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Start Transaction
+	tx := s.db.Begin()
+
+	// If anything panics, Rollback changes
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Lock the row
+	if err := tx.Clauses(clause.Locking{
+		Strength: clause.LockingStrengthUpdate,
+	}).First(&snippet, uid).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	// Expired?
+	if time.Now().After(snippet.ExpiresAt) {
+		tx.Rollback()
+		return nil, errors.New("expired")
+	}
+
+	// Burnt? (Views > MaxViews)
+	if snippet.CurrentViews >= snippet.MaxViews {
+		tx.Rollback()
+		return nil, errors.New("burnt")
+	}
+
+	// Increment View
+	snippet.CurrentViews++
+	if err := tx.Save(&snippet).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	// Commit
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	// If successful, decrypt the content
+	decrypted, err := utils.Decrypt(snippet.Content)
+	if err != nil {
+		return nil, errors.New("decryption_failed")
+	}
+	snippet.Content = decrypted
+
+	return &snippet, nil
 }

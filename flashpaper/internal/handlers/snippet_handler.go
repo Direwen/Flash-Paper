@@ -63,3 +63,30 @@ func (h *SnippetHandler) Create(c *gin.Context) {
 		"max_views":  snippet.MaxViews,
 	})
 }
+
+func (h *SnippetHandler) Get(c *gin.Context) {
+	// Get ID from route param
+	snippetID := c.Param("id")
+
+	snippet, err := h.service.GetSnippet(snippetID)
+	if err != nil {
+		switch err.Error() {
+		case "invalid_id", "not_found":
+			utils.SendError(c, http.StatusBadRequest, err)
+		case "expired", "burnt":
+			utils.SendError(c, http.StatusBadRequest, err)
+		default:
+			utils.SendError(c, http.StatusInternalServerError, err)
+		}
+		return
+	}
+
+	utils.SendSuccess(c, http.StatusOK, gin.H{
+		"title":      snippet.Title,
+		"content":    snippet.Content,
+		"language":   snippet.Language,
+		"views_left": snippet.MaxViews - snippet.CurrentViews,
+		"expires_at": snippet.ExpiresAt,
+		"created_at": snippet.CreatedAt,
+	})
+}
