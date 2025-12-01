@@ -12,6 +12,7 @@ import (
 	"github.com/direwen/flashpaper/internal/handlers"
 	"github.com/direwen/flashpaper/internal/middleware"
 	"github.com/direwen/flashpaper/internal/services"
+	"github.com/direwen/flashpaper/internal/tasks"
 	"github.com/direwen/flashpaper/pkg/utils"
 )
 
@@ -24,6 +25,9 @@ func main() {
 	// Init Database Connection
 	config.ConnectDB()
 	db := config.GetDB()
+
+	// Start Background Task
+	tasks.StartJanitor()
 
 	// Init Layers
 	authService := services.NewAuthService(db)
