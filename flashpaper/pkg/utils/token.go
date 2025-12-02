@@ -21,7 +21,7 @@ func GenerateToken(userID uuid.UUID) (string, error) {
 		token_expiration = "24h"
 	}
 
-	token_expiration_duration, err := time.ParseDuration(token_expiration)
+	token_expiration_duration, err := time.ParseDuration(token_expiration + "h")
 	if err != nil {
 		return "", err
 	}

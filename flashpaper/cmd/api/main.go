@@ -1,9 +1,13 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -26,6 +30,16 @@ func main() {
 	config.ConnectDB()
 	db := config.GetDB()
 
+	// Health Check: Database Connection
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Fatal("Failed to get database instance: ", err)
+	}
+	if err := sqlDB.Ping(); err != nil {
+		log.Fatal("Failed to ping database: ", err)
+	}
+	log.Println("Database connection verified.")
+
 	// Start Background Task
 	tasks.StartJanitor()
 
@@ -37,7 +51,6 @@ func main() {
 
 	// Init Gin Router
 	r := gin.Default()
-
 	{
 		r.GET("/health", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{
@@ -74,8 +87,43 @@ func main() {
 	}
 	log.Println("Listening on port: " + port)
 
-	if err := r.Run(":" + port); err != nil {
-		log.Fatal("Server Failed to start: ", err)
+	// if err := r.Run(":" + port); err != nil {
+	// 	log.Fatal("Server Failed to start: ", err)
+	// }
+
+	server := &http.Server{
+		Addr:    ":" + port,
+		Handler: r,
 	}
+
+	// Server starts in background goroutine so main goroutine can continue
+	go func() {
+		// server.ListenAndServe runs forever (infinite loop) until shutdown
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Server Failed to start: %v", err)
+		}
+	}()
+
+	// Create a channel to hold one os.Signal value
+	quit := make(chan os.Signal, 1)
+	// When the OS sends SIGINT (Ctrl+C) or SIGTERM (docker stop) to this process,
+	// signal.Notify catches it and sends that signal into the quit channel
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	// Block main goroutine here until a signal is received from the channel
+	<-quit
+	log.Println("Shutting down server...")
+
+	// Create a context that automatically expires after 10 seconds (sets a deadline)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// Ensures cancel() is called when main() exits to release context resources
+	defer cancel()
+
+	// Graceful shutdown: stops accepting new requests, waits for active requests
+	// to finish (up to 10 seconds), then closes all connections
+	if err := server.Shutdown(ctx); err != nil {
+		log.Fatal("Server Shutdown Failed:", err)
+	}
+
+	log.Println("Server exited successfully")
 
 }

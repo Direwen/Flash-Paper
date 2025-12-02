@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"strings"
 	"time"
@@ -21,6 +22,7 @@ func NewSnippetService(db *gorm.DB) *SnippetService {
 }
 
 func (s SnippetService) CreateSnippet(
+	ctx context.Context,
 	userID *uuid.UUID,
 	content,
 	title,
@@ -54,14 +56,14 @@ func (s SnippetService) CreateSnippet(
 		ExpiresAt: expiresAt,
 	}
 
-	if err := s.db.Create(snippet).Error; err != nil {
+	if err := s.db.WithContext(ctx).Create(snippet).Error; err != nil {
 		return nil, err
 	}
 
 	return snippet, nil
 }
 
-func (s SnippetService) GetSnippet(snippetID string) (*models.Snippet, error) {
+func (s SnippetService) GetSnippet(ctx context.Context, snippetID string) (*models.Snippet, error) {
 	var snippet models.Snippet
 
 	// Validate uuid format
@@ -71,7 +73,7 @@ func (s SnippetService) GetSnippet(snippetID string) (*models.Snippet, error) {
 	}
 
 	// Start Transaction
-	tx := s.db.Begin()
+	tx := s.db.WithContext(ctx).Begin()
 
 	// If anything panics, Rollback changes
 	defer func() {
@@ -123,8 +125,8 @@ func (s SnippetService) GetSnippet(snippetID string) (*models.Snippet, error) {
 	return &snippet, nil
 }
 
-func (s SnippetService) DeleteSnippet(snippetID uuid.UUID, userID uuid.UUID) error {
-	result := s.db.Where("id = ? AND user_id = ?", snippetID, userID).Delete(&models.Snippet{})
+func (s SnippetService) DeleteSnippet(ctx context.Context, snippetID uuid.UUID, userID uuid.UUID) error {
+	result := s.db.WithContext(ctx).Where("id = ? AND user_id = ?", snippetID, userID).Delete(&models.Snippet{})
 	if err := result.Error; err != nil {
 		return err
 	}

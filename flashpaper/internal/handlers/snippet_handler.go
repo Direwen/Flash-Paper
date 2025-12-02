@@ -42,6 +42,7 @@ func (h *SnippetHandler) Create(c *gin.Context) {
 	}
 
 	snippet, err := h.service.CreateSnippet(
+		c.Request.Context(),
 		userID,
 		req.Content,
 		req.Title,
@@ -69,7 +70,7 @@ func (h *SnippetHandler) Get(c *gin.Context) {
 	// Get ID from route param
 	snippetID := c.Param("id")
 
-	snippet, err := h.service.GetSnippet(snippetID)
+	snippet, err := h.service.GetSnippet(c.Request.Context(), snippetID)
 	if err != nil {
 		utils.SendError(c, http.StatusBadRequest, errors.New("snippet's unavailable"))
 		return
@@ -96,7 +97,7 @@ func (h *SnippetHandler) Delete(c *gin.Context) {
 	userIDval, _ := c.Get("userID")
 	userID := userIDval.(uuid.UUID)
 
-	err = h.service.DeleteSnippet(snippetID, userID)
+	err = h.service.DeleteSnippet(c.Request.Context(), snippetID, userID)
 	if err != nil {
 		if err.Error() == "not_found" {
 			utils.SendError(c, http.StatusNotFound, errors.New("snippet not found or access denied"))

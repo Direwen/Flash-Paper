@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"errors"
 
 	"golang.org/x/crypto/bcrypt"
@@ -20,11 +21,11 @@ func NewAuthService(db *gorm.DB) *AuthService {
 	}
 }
 
-func (s *AuthService) RegisterUser(email, password string) error {
+func (s *AuthService) RegisterUser(ctx context.Context, email, password string) error {
 
 	//Checking if there's already a user with these credentials
 	var existingUser models.User
-	if err := s.db.Where("email = ?", email).First(&existingUser).Error; err == nil {
+	if err := s.db.WithContext(ctx).Where("email = ?", email).First(&existingUser).Error; err == nil {
 		return errors.New("user with this email already exists")
 	}
 
@@ -40,7 +41,7 @@ func (s *AuthService) RegisterUser(email, password string) error {
 		Password: string(hashedPassword),
 	}
 
-	if err := s.db.Create(&user).Error; err != nil {
+	if err := s.db.WithContext(ctx).Create(&user).Error; err != nil {
 		return err
 	}
 
@@ -48,11 +49,11 @@ func (s *AuthService) RegisterUser(email, password string) error {
 
 }
 
-func (s *AuthService) LoginUser(email, password string) (string, error) {
+func (s *AuthService) LoginUser(ctx context.Context, email, password string) (string, error) {
 	var user models.User
 
 	// Find the user record and populate "user" variable with all data included in that found record
-	if err := s.db.Where("email = ?", email).First(&user).Error; err != nil {
+	if err := s.db.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
 		return "", errors.New("invalid credentials")
 	}
 

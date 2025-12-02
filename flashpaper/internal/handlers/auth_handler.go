@@ -34,7 +34,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	}
 
 	// Call the service
-	err := h.service.RegisterUser(req.Email, req.Password)
+	err := h.service.RegisterUser(c.Request.Context(), req.Email, req.Password)
 	if err != nil {
 		utils.SendError(c, http.StatusInternalServerError, err)
 		return
@@ -59,7 +59,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	// Login
-	token, err := h.service.LoginUser(req.Email, req.Password)
+	token, err := h.service.LoginUser(c.Request.Context(), req.Email, req.Password)
 	if err != nil {
 		utils.SendError(c, http.StatusUnauthorized, err)
 		return
