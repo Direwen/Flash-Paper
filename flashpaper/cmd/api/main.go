@@ -124,6 +124,11 @@ func main() {
 		log.Fatal("Server Shutdown Failed:", err)
 	}
 
+	// Close the database connection
+	if err := sqlDB.Close(); err != nil {
+		log.Fatal("Failed to close database connection: ", err)
+	}
+
 	log.Println("Server exited successfully")
 
 }
