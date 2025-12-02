@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/direwen/flashpaper/internal/services"
@@ -88,5 +89,31 @@ func (h *SnippetHandler) Get(c *gin.Context) {
 		"views_left": snippet.MaxViews - snippet.CurrentViews,
 		"expires_at": snippet.ExpiresAt,
 		"created_at": snippet.CreatedAt,
+	})
+}
+
+func (h *SnippetHandler) Delete(c *gin.Context) {
+	snippetIDval := c.Param("id")
+	snippetID, err := uuid.Parse(snippetIDval)
+	if err != nil {
+		utils.SendError(c, http.StatusBadRequest, errors.New("invalid id"))
+		return
+	}
+
+	userIDval, _ := c.Get("userID")
+	userID := userIDval.(uuid.UUID)
+
+	err = h.service.DeleteSnippet(snippetID, userID)
+	if err != nil {
+		if err.Error() == "not_found" {
+			utils.SendError(c, http.StatusNotFound, errors.New("snippet not found or access denied"))
+		} else {
+			utils.SendError(c, http.StatusInternalServerError, err)
+		}
+		return
+	}
+
+	utils.SendSuccess(c, http.StatusOK, gin.H{
+		"message": "Snippet deleted successfully",
 	})
 }

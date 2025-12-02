@@ -52,7 +52,7 @@ func main() {
 	}
 
 	// Protected Routes
-	protected := r.Group("/api")
+	protected := r.Group("")
 	protected.Use(middleware.AuthMiddleware())
 	{
 		protected.GET("/me", func(c *gin.Context) {
@@ -64,6 +64,7 @@ func main() {
 			)
 		})
 		protected.POST("/snippets", snippetHandler.Create)
+		protected.DELETE("/snippets/:id", snippetHandler.Delete)
 	}
 
 	// Get port from env or default to 8080

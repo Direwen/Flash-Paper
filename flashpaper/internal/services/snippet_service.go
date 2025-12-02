@@ -122,3 +122,16 @@ func (s SnippetService) GetSnippet(snippetID string) (*models.Snippet, error) {
 
 	return &snippet, nil
 }
+
+func (s SnippetService) DeleteSnippet(snippetID uuid.UUID, userID uuid.UUID) error {
+	result := s.db.Where("id = ? AND user_id = ?", snippetID, userID).Delete(&models.Snippet{})
+	if err := result.Error; err != nil {
+		return err
+	}
+
+	if result.RowsAffected == 0 {
+		return errors.New("not_found")
+	}
+
+	return nil
+}
