@@ -71,14 +71,7 @@ func (h *SnippetHandler) Get(c *gin.Context) {
 
 	snippet, err := h.service.GetSnippet(snippetID)
 	if err != nil {
-		switch err.Error() {
-		case "invalid_id", "not_found":
-			utils.SendError(c, http.StatusBadRequest, err)
-		case "expired", "burnt":
-			utils.SendError(c, http.StatusBadRequest, err)
-		default:
-			utils.SendError(c, http.StatusInternalServerError, err)
-		}
+		utils.SendError(c, http.StatusBadRequest, errors.New("snippet's unavailable"))
 		return
 	}
 

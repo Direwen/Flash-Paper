@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"log"
+	"os"
 	"time"
 
 	"github.com/direwen/flashpaper/internal/config"
@@ -10,15 +11,26 @@ import (
 
 func StartJanitor() {
 
-	// Create a ticker that sends a signal on its channel every 5 seconds
-	ticker := time.NewTicker(5 * time.Second)
+	interval := os.Getenv("JANITOR_INTERVAL")
+	if interval == "" {
+		interval = "10"
+	}
+
+	// Parse the interval string into a duration
+	duration, err := time.ParseDuration(interval + "s")
+	if err != nil {
+		log.Println("Failed to parse JANITOR_INTERVAL:", err)
+		return
+	}
+
+	// Create a ticker that sends a signal on its channel at the specified interval
+	ticker := time.NewTicker(duration)
 
 	// Run the cleanup task concurrently in a goroutine
 	go func() {
 		// Infinite loop to continuously wait for ticker signals
 		for {
 			// Block and wait for the next signal from the ticker channel
-			// When the signal arrives (after 5 seconds), execution continues
 			<-ticker.C
 
 			// Trigger the cleanup function to delete expired snippets
@@ -26,7 +38,7 @@ func StartJanitor() {
 		}
 	}()
 
-	log.Println("The Janitor is on duty to clean every 5 minutes.")
+	log.Printf("The Janitor is on duty to clean every %s.", duration)
 }
 
 func cleanExpiredSnippets() {

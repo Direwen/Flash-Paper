@@ -16,10 +16,20 @@ func GenerateToken(userID uuid.UUID) (string, error) {
 		return "", errors.New("JWT SECRET KEY is not set")
 	}
 
+	token_expiration := os.Getenv("TOKEN_EXPIRATION")
+	if token_expiration == "" {
+		token_expiration = "24h"
+	}
+
+	token_expiration_duration, err := time.ParseDuration(token_expiration)
+	if err != nil {
+		return "", err
+	}
+
 	// Specify token claims
 	claims := jwt.MapClaims{
 		"user_id": userID.String(),
-		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+		"exp":     time.Now().Add(token_expiration_duration).Unix(),
 		"iat":     time.Now().Unix(),
 	}
 
