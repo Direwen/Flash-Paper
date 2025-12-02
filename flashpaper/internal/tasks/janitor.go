@@ -13,11 +13,11 @@ func StartJanitor() {
 
 	interval := os.Getenv("JANITOR_INTERVAL")
 	if interval == "" {
-		interval = "10"
+		interval = "10s"
 	}
 
 	// Parse the interval string into a duration
-	duration, err := time.ParseDuration(interval + "s")
+	duration, err := time.ParseDuration(interval)
 	if err != nil {
 		log.Println("Failed to parse JANITOR_INTERVAL:", err)
 		return

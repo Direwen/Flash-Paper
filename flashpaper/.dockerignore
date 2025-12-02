@@ -1,0 +1,17 @@
+# Don't copy these files into the Docker image
+.env
+.git
+.gitignore
+*.md
+.vscode
+.idea
+
+# Build artifacts
+bin/
+*.exe
+*.test
+
+# Temporary files
+tmp/
+*.tmp
+*.log
