@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 
 	"github.com/direwen/flashpaper/internal/services"
 	"github.com/direwen/flashpaper/pkg/utils"
@@ -68,4 +69,26 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	utils.SendSuccess(c, http.StatusOK, gin.H{
 		"token": token,
 	})
+}
+
+func (h *AuthHandler) GetMe(c *gin.Context) {
+
+	userIDVal, exists := c.Get("userID")
+	if !exists {
+		utils.SendError(c, http.StatusUnauthorized, nil)
+		return
+	}
+
+	userID := userIDVal.(uuid.UUID)
+
+	user, err := h.service.GetUser(c.Request.Context(), userID)
+	if err != nil {
+		utils.SendError(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.SendSuccess(c, http.StatusOK, gin.H{
+		"user": user,
+	})
+
 }

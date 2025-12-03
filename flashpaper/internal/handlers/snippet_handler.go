@@ -111,3 +111,21 @@ func (h *SnippetHandler) Delete(c *gin.Context) {
 		"message": "Snippet deleted successfully",
 	})
 }
+
+func (h *SnippetHandler) GetDashboard(c *gin.Context) {
+	userIDval, exists := c.Get("userID")
+	if !exists {
+		utils.SendError(c, http.StatusUnauthorized, errors.New("unauthorized"))
+		return
+	}
+
+	userID := userIDval.(uuid.UUID)
+
+	stats, err := h.service.GetDashboardStats(c.Request.Context(), userID)
+	if err != nil {
+		utils.SendError(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.SendSuccess(c, http.StatusOK, stats)
+}

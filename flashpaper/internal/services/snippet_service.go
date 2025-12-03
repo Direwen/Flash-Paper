@@ -137,3 +137,44 @@ func (s SnippetService) DeleteSnippet(ctx context.Context, snippetID uuid.UUID, 
 
 	return nil
 }
+
+type DashboardStats struct {
+	ActiveSnippets      int64 `json:"active_snippets"`
+	ActiveBurntSnippets int64 `json:"active_burnt_snippets"`
+	TotalViews          int64 `json:"total_views"`
+}
+
+func (s SnippetService) GetDashboardStats(ctx context.Context, userID uuid.UUID) (*DashboardStats, error) {
+	var stats DashboardStats
+
+	// Active snippets (not expired, not burnt)
+	if err := s.db.WithContext(ctx).
+		Model(&models.Snippet{}).
+		Where("user_id = ? AND expires_at > ? AND current_views < max_views", userID, time.Now()).
+		Count(&stats.ActiveSnippets).Error; err != nil {
+		return nil, err
+	}
+
+	// Burnt snippets (not expired but reached max views)
+	if err := s.db.WithContext(ctx).
+		Model(&models.Snippet{}).
+		Where("user_id = ? AND expires_at > ? AND current_views >= max_views", userID, time.Now()).
+		Count(&stats.ActiveBurntSnippets).Error; err != nil {
+		return nil, err
+	}
+
+	// Total views across all active snippets
+	var totalViews *int64
+	if err := s.db.WithContext(ctx).
+		Model(&models.Snippet{}).
+		Where("user_id = ? AND expires_at > ? AND current_views < max_views", userID, time.Now()).
+		Select("SUM(current_views)").
+		Scan(&totalViews).Error; err != nil {
+		return nil, err
+	}
+	if totalViews != nil {
+		stats.TotalViews = *totalViews
+	}
+
+	return &stats, nil
+}

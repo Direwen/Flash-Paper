@@ -3,12 +3,14 @@ package services
 import (
 	"context"
 	"errors"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 
 	"github.com/direwen/flashpaper/internal/models"
 	"github.com/direwen/flashpaper/pkg/utils"
+	"github.com/google/uuid"
 )
 
 type AuthService struct {
@@ -70,5 +72,26 @@ func (s *AuthService) LoginUser(ctx context.Context, email, password string) (st
 	}
 
 	return token, nil
+
+}
+
+type UserResponse struct {
+	ID        uuid.UUID `json:"id"`
+	Email     string    `json:"email"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+func (s *AuthService) GetUser(ctx context.Context, userID uuid.UUID) (*UserResponse, error) {
+	var user models.User
+
+	if err := s.db.WithContext(ctx).Where("id = ?", userID).First(&user).Error; err != nil {
+		return nil, errors.New("user not found")
+	}
+
+	return &UserResponse{
+		ID:        user.ID,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+	}, nil
 
 }

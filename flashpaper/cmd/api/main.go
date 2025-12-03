@@ -17,7 +17,6 @@ import (
 	"github.com/direwen/flashpaper/internal/middleware"
 	"github.com/direwen/flashpaper/internal/services"
 	"github.com/direwen/flashpaper/internal/tasks"
-	"github.com/direwen/flashpaper/pkg/utils"
 )
 
 func main() {
@@ -68,14 +67,8 @@ func main() {
 	protected := r.Group("")
 	protected.Use(middleware.AuthMiddleware())
 	{
-		protected.GET("/me", func(c *gin.Context) {
-			userID, _ := c.Get("userID")
-			utils.SendSuccess(
-				c,
-				http.StatusOK,
-				userID,
-			)
-		})
+		protected.GET("/me", authHandler.GetMe)
+		protected.GET("/dashboard", snippetHandler.GetDashboard)
 		protected.POST("/snippets", snippetHandler.Create)
 		protected.DELETE("/snippets/:id", snippetHandler.Delete)
 	}
