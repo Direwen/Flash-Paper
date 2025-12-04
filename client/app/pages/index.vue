@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { MazLockClosed, MazShieldCheck, MazClock } from '@maz-ui/icons'
+
+const authStore = useAuthStore()
 </script>
 
 <template>
@@ -43,6 +45,7 @@ import { MazLockClosed, MazShieldCheck, MazClock } from '@maz-ui/icons'
 
             <!-- Create Card Section -->
             <div class="flex justify-center lg:justify-end relative z-10">
+                <span>{{ authStore.user ?? "No User" }}</span>
                 <SnippetCreateCard />
             </div>
 

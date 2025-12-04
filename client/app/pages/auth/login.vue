@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { MazEnvelope, MazLockClosed, MazFire } from '@maz-ui/icons'
 import { ref } from 'vue'
+import { useAuthStore } from '~/stores/auth'
+import { useNuxtApp } from '#app'
+
 
 const form = ref({
     email: '',
@@ -8,14 +11,22 @@ const form = ref({
 })
 
 const isLoading = ref(false)
+const authStore = useAuthStore()
+const router = useRouter()
+const { $toast } = useNuxtApp()
+const { parseError } = useErrorParser()
 
 const handleLogin = async () => {
     isLoading.value = true
-    // Mock API call
-    setTimeout(() => {
+    try {
+        await authStore.login(form.value)
+        $toast?.success(`Welcome back ${authStore.user?.email}`)
+        router.push("/")
+    } catch (error) {
+        $toast?.error(parseError(error, "Failed to log in"))
+    } finally {
         isLoading.value = false
-        console.log('Logging in with:', form.value)
-    }, 1500)
+    }
 }
 </script>
 

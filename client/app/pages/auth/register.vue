@@ -8,13 +8,22 @@ const form = ref({
 })
 
 const isLoading = ref(false)
+const authStore = useAuthStore()
+const router = useRouter()
+const { $toast } = useNuxtApp()
 
 const handleRegister = async () => {
     isLoading.value = true
-    setTimeout(() => {
+    try {
+        await authStore.register(form.value)
+        $toast?.success("Created Successfully")
+        router.push('/')
+    } catch (error) {
+        console.error(error)
+        $toast?.error("Failed to Register")
+    } finally {
         isLoading.value = false
-        console.log('Registering with:', form.value)
-    }, 1500)
+    }
 }
 </script>
 

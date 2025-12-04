@@ -17,8 +17,8 @@ export const useAuthStore = defineStore('auth', () => {
     const register = async (credentials: any) => {
         // $api automatically uses baseURL
         await $api('/auth/register', {
-        method: 'POST',
-        body: credentials
+            method: 'POST',
+            body: credentials
         })
     }
 
@@ -27,11 +27,12 @@ export const useAuthStore = defineStore('auth', () => {
         method: 'POST',
         body: credentials
         })
-        
+        console.log(response)
         // Set the cookie. The plugin will detect this change for future requests!
         if (response.success && response.data.token) {
-        token.value = response.data.token
-        await fetchUser() // Load profile immediately
+            token.value = response.data.token
+            console.log("Fetched", token.value)
+            await fetchUser()
         }
     }
 
@@ -39,14 +40,18 @@ export const useAuthStore = defineStore('auth', () => {
         if (!token.value) return
 
         try {
-        const response = await $api<{ success: boolean, data: User }>('/api/me')
-        if (response.success) {
-            user.value = response.data
-        }
+            const response = await $api<{ success: boolean, data: User }>('/me', {
+                headers: {
+                    Authorization: `Bearer ${token.value}`
+                }
+            })
+            if (response.success) {
+                user.value = response.data
+            }
         } catch (error) {
-        // If /me fails (token expired), log them out
-        token.value = null
-        user.value = null
+            // If /me fails (token expired), log them out
+            token.value = null
+            user.value = null
         }
     }
 
@@ -59,11 +64,12 @@ export const useAuthStore = defineStore('auth', () => {
     // 4. Initialize (Run this when app starts)
     const initAuth = async () => {
         if (token.value && !user.value) {
-        await fetchUser()
+            await fetchUser()
         }
     }
 
     return {
+        token,
         user,
         isLoading,
         register,

@@ -1,26 +1,31 @@
-export default defineNuxtPlugin(() => {
+// plugins/api.ts
+export default defineNuxtPlugin((nuxtApp) => {
     const config = useRuntimeConfig()
-    // get a reactive ref of browser cookie "token"
-    const token = useCookie<string | null>('token')
+    const token = useCookie('token')
 
     const api = $fetch.create({
-        baseURL: config.public.apiBase as string,
-        onRequest({options}) {
+        baseURL: config.public.apiBase,
+        
+        onRequest({ options }) {
             if (token.value) {
-                options.headers = new Headers(options.headers)
-                options.headers.set('Authorization', `Bearer ${token.value}`)
+                // Ensure headers is a Headers object
+                const headers = new Headers(options.headers)
+                headers.set('Authorization', `Bearer ${token.value}`)
+                options.headers = headers
             }
         },
-        onResponseError({response}) {
+        
+        onResponseError({ response }) {
             if (response.status === 401) {
-                // remove the token (reactive ref) and redirect to login
                 token.value = null
-                navigateTo("/auth/login")
+                navigateTo('/auth/login')
             }
         }
     })
 
     return {
-        provide: {api}
+        provide: {
+            api
+        }
     }
 })
