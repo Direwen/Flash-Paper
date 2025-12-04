@@ -62,6 +62,9 @@ const mazUiConfig = {
       }
     },
   },
+  composables: {
+    useToast: true,
+  },
 }
 
 export default defineNuxtConfig({
@@ -73,6 +76,11 @@ export default defineNuxtConfig({
       tailwindcss(),
     ],
   },
-  modules: ['@maz-ui/nuxt'],
+  modules: ['@maz-ui/nuxt', '@pinia/nuxt'],
   mazUi: mazUiConfig,
+  runtimeConfig: {
+    public: {
+      apiBase: "http://localhost:8080"
+    }
+  },
 } as any)
