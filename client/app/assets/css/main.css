@@ -1,1 +1,15 @@
 @import "tailwindcss";
+
+/* stylelint-disable-next-line at-rule-no-unknown */
+@theme {
+  /* Dark Mode Colors (matching Maz UI dark theme) */
+  --color-primary: #FBBF24;      /* Neon Amber - primary accent */
+  --color-secondary: #18181b;    /* Card backgrounds */
+  --color-background: #0f0f11;   /* Main page background */
+  --color-foreground: #f5f5f6;   /* Text color */
+  /* Status Colors */
+  --color-success: #22c55e;      /* Green */
+  --color-warning: #FBBF24;      /* Amber */
+  --color-danger: #ef4444;       /* Red (Burn color) */
+  --color-info: #3b82f6;         /* Blue */
+}
