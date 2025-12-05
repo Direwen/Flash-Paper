@@ -78,6 +78,7 @@ func main() {
 		protected.GET("/me", authHandler.GetMe)
 		protected.GET("/dashboard", snippetHandler.GetDashboard)
 		protected.POST("/snippets", snippetHandler.Create)
+		protected.GET("/snippets", snippetHandler.List)
 		protected.DELETE("/snippets/:id", snippetHandler.Delete)
 	}
 

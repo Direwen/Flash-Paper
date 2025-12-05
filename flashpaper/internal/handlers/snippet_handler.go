@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"errors"
+	"math"
 	"net/http"
+	"strconv"
 
 	"github.com/direwen/flashpaper/internal/services"
 	"github.com/direwen/flashpaper/pkg/utils"
@@ -128,4 +130,30 @@ func (h *SnippetHandler) GetDashboard(c *gin.Context) {
 	}
 
 	utils.SendSuccess(c, http.StatusOK, stats)
+}
+
+func (h *SnippetHandler) List(c *gin.Context) {
+
+	userIDVal, _ := c.Get("userID")
+	userID := userIDVal.(uuid.UUID)
+	// int() only works for numeric types
+	// to convert string to int, strconv.Atoi is required
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+
+	snippets, total, err := h.service.GetActiveSnippets(c.Request.Context(), userID, page, limit)
+	if err != nil {
+		utils.SendError(c, http.StatusInternalServerError, errors.New("failed to fetch snippets"))
+		return
+	}
+
+	utils.SendSuccess(c, http.StatusOK, gin.H{
+		"data": snippets,
+		"meta": gin.H{
+			"current_page": page,
+			"per_page":     limit,
+			"total_items":  total,
+			"total_pages":  int(math.Ceil(float64(total) / float64(limit))),
+		},
+	})
 }

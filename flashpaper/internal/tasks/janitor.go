@@ -45,8 +45,8 @@ func cleanExpiredSnippets() {
 	// Get database connection
 	db := config.GetDB()
 
-	// Delete snippets that are expired by time or have reached max views
-	result := db.Where("expires_at < ? OR (max_views > 0 AND current_views >= max_views)", time.Now()).Delete(&models.Snippet{})
+	// Delete snippets that are expired by time
+	result := db.Where("expires_at < ?", time.Now()).Delete(&models.Snippet{})
 	if err := result.Error; err != nil {
 		log.Println("Janitor failed to clean", err)
 		return

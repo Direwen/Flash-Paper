@@ -178,3 +178,54 @@ func (s SnippetService) GetDashboardStats(ctx context.Context, userID uuid.UUID)
 
 	return &stats, nil
 }
+
+type OverviewSnippet struct {
+	ID           uuid.UUID `json:"id"`
+	Title        string    `json:"title"`
+	Language     string    `json:"language"`
+	MaxViews     int       `json:"max_views"`
+	CurrentViews int       `json:"current_views"`
+	ExpiresAt    time.Time `json:"expires_at"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
+func (s SnippetService) GetActiveSnippets(ctx context.Context, UserID uuid.UUID, page, limit int) ([]OverviewSnippet, int64, error) {
+	var snippets []OverviewSnippet
+	var total int64
+
+	if page < 1 {
+		page = 1
+	}
+
+	if limit < 1 {
+		limit = 10
+	}
+
+	if limit > 100 {
+		limit = 100
+	}
+
+	offset := (page - 1) * limit
+
+	query := s.db.WithContext(ctx).
+		Model(&models.Snippet{}).
+		Where("user_id = ?", UserID).
+		Where("expires_at > ?", time.Now())
+
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	query = query.
+		Select("id", "title", "language", "max_views", "current_views", "expires_at", "created_at").
+		Order("created_at DESC").
+		Offset(offset).
+		Limit(limit).
+		Find(&snippets)
+
+	if err := query.Error; err != nil {
+		return nil, 0, err
+	}
+
+	return snippets, total, nil
+}
