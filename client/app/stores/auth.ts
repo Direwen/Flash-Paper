@@ -58,7 +58,6 @@ export const useAuthStore = defineStore('auth', () => {
     const logout = () => {
         token.value = null
         user.value = null
-        navigateTo('/auth/login')
     }
 
     // 4. Initialize (Run this when app starts)

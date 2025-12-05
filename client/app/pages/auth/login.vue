@@ -20,8 +20,8 @@ const handleLogin = async () => {
     isLoading.value = true
     try {
         await authStore.login(form.value)
-        $toast?.success(`Welcome back ${authStore.user?.email}`)
         router.push("/")
+        $toast?.success(`Welcome back ${authStore.user?.email}`)
     } catch (error) {
         $toast?.error(parseError(error, "Failed to log in"))
     } finally {

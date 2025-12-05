@@ -87,8 +87,6 @@ func (h *AuthHandler) GetMe(c *gin.Context) {
 		return
 	}
 
-	utils.SendSuccess(c, http.StatusOK, gin.H{
-		"user": user,
-	})
+	utils.SendSuccess(c, http.StatusOK, user)
 
 }

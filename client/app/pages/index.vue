@@ -45,7 +45,6 @@ const authStore = useAuthStore()
 
             <!-- Create Card Section -->
             <div class="flex justify-center lg:justify-end relative z-10">
-                <span>{{ authStore.user ?? "No User" }}</span>
                 <SnippetCreateCard />
             </div>
 
