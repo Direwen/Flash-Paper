@@ -13,3 +13,7 @@
   --color-danger: #ef4444;       /* Red (Burn color) */
   --color-info: #3b82f6;         /* Blue */
 }
+
+body {
+  @apply bg-background;
+}

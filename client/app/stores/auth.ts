@@ -40,11 +40,7 @@ export const useAuthStore = defineStore('auth', () => {
         if (!token.value) return
 
         try {
-            const response = await $api<{ success: boolean, data: User }>('/me', {
-                headers: {
-                    Authorization: `Bearer ${token.value}`
-                }
-            })
+            const response = await $api<{ success: boolean, data: User }>('/me')
             if (response.success) {
                 user.value = response.data
             }

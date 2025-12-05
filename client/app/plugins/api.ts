@@ -2,7 +2,6 @@ import { useNuxtApp } from '#app'
 
 export default defineNuxtPlugin((nuxtApp) => {
     const config = useRuntimeConfig()
-    const token = useCookie('token')
     const { $toast } = useNuxtApp()
     const { parseError } = useErrorParser()
 
@@ -10,6 +9,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         baseURL: config.public.apiBase,
 
         onRequest({ options }) {
+            const token = useCookie('token')
             if (token.value) {
                 // Ensure headers is a Headers object
                 const headers = new Headers(options.headers)
@@ -20,6 +20,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         
         onResponseError({ response }) {
             if (response.status === 401) {
+                const token = useCookie('token')
                 token.value = null
                 $toast?.error(parseError("Your session has expired. Please log in again."))
                 navigateTo('/auth/login')
