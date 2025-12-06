@@ -69,6 +69,7 @@ func main() {
 		r.POST("/auth/register", authHandler.Register)
 		r.POST("/auth/login", authHandler.Login)
 		r.GET("/snippets/:id", snippetHandler.Get)
+		r.GET("/snippets/:id/meta", snippetHandler.GetMeta)
 	}
 
 	// Protected Routes

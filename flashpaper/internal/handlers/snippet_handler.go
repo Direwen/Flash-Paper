@@ -36,12 +36,8 @@ func (h *SnippetHandler) Create(c *gin.Context) {
 	}
 
 	// Get User ID from the context (middleware assigned the user id)
-	userIDVal, exists := c.Get("userID")
-	var userID *uuid.UUID
-	if exists {
-		id := userIDVal.(uuid.UUID)
-		userID = &id
-	}
+	userIDVal, _ := c.Get("userID")
+	userID := userIDVal.(uuid.UUID)
 
 	snippet, err := h.service.CreateSnippet(
 		c.Request.Context(),
@@ -156,4 +152,23 @@ func (h *SnippetHandler) List(c *gin.Context) {
 			"total_pages":  int(math.Ceil(float64(total) / float64(limit))),
 		},
 	})
+}
+
+func (h *SnippetHandler) GetMeta(c *gin.Context) {
+	snippetID := c.Param("id")
+
+	snippetMetadata, err := h.service.GetSnippetMetadata(c.Request.Context(), snippetID)
+	if err != nil {
+		switch err.Error() {
+		case "not_found":
+			utils.SendError(c, http.StatusNotFound, errors.New("snippet not found"))
+		case "expired":
+			utils.SendError(c, http.StatusGone, errors.New("snippet expired"))
+		default:
+			utils.SendError(c, http.StatusInternalServerError, err)
+		}
+		return
+	}
+
+	utils.SendSuccess(c, http.StatusOK, snippetMetadata)
 }

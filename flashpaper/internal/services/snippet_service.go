@@ -23,7 +23,7 @@ func NewSnippetService(db *gorm.DB) *SnippetService {
 
 func (s SnippetService) CreateSnippet(
 	ctx context.Context,
-	userID *uuid.UUID,
+	userID uuid.UUID,
 	content,
 	title,
 	language string,
@@ -228,4 +228,45 @@ func (s SnippetService) GetActiveSnippets(ctx context.Context, UserID uuid.UUID,
 	}
 
 	return snippets, total, nil
+}
+
+type SnippetMetadata struct {
+	UserID    uuid.UUID `json:"user_id"`
+	IsActive  bool      `json:"is_active"`
+	ViewsLeft int64     `json:"views_left"`
+	ExpiresAt time.Time `json:"expires_at"`
+}
+
+func (s SnippetService) GetSnippetMetadata(ctx context.Context, snippetID string) (*SnippetMetadata, error) {
+	var snippet models.Snippet
+
+	// Validate uuid
+	uid, err := uuid.Parse(snippetID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get only required values at the high-risk endpoint
+	query := s.db.WithContext(ctx).
+		Select("user_id", "max_views", "current_views", "expires_at").
+		First(&snippet, uid)
+
+	if err := query.Error; err != nil {
+		return nil, errors.New("not_found")
+	}
+
+	if time.Now().After(snippet.ExpiresAt) {
+		return nil, errors.New("expired")
+	}
+
+	if snippet.CurrentViews >= snippet.MaxViews {
+		return nil, errors.New("burnt")
+	}
+
+	return &SnippetMetadata{
+		UserID:    snippet.UserID,
+		IsActive:  true,
+		ViewsLeft: int64(snippet.MaxViews - snippet.CurrentViews),
+		ExpiresAt: snippet.ExpiresAt,
+	}, nil
 }
