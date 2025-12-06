@@ -92,7 +92,7 @@ const handleSubmit = async () => {
 const copyLink = () => {
     if (!createdSnippet.value) return
     const id = createdSnippet.value.id
-    const fullLink = `${window.location.origin}/view/${id}`
+    const fullLink = `${window.location.origin}/snippets/view/${id}`
     
     navigator.clipboard.writeText(fullLink)
     $toast.success("Link copied to clipboard")
