@@ -107,7 +107,7 @@ const resetForm = () => {
 
 const shareLink = computed(() => {
     if (!createdSnippet.value) return ''
-    return `${window.location.origin}/view/${createdSnippet.value.id}`
+    return `${window.location.origin}/snippets/view/${createdSnippet.value.id}`
 })
 </script>
 
