@@ -17,3 +17,17 @@
 body {
   @apply bg-background;
 }
+
+/* Fix MazSelect dropdown option text colors for dark theme */
+.m-select-list-item {
+  color: var(--color-foreground) !important;
+}
+
+.m-select-list-item:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.m-select-list {
+  background-color: var(--color-secondary) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}

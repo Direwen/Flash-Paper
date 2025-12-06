@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import type { ApiResponse } from '~/types/response'
 
 interface User {
     id: string
@@ -8,7 +9,7 @@ interface User {
 
 export const useAuthStore = defineStore('auth', () => {
     // Injections
-    const { $api } = useNuxtApp()
+    const { $api, $toast } = useNuxtApp()
     const token = useCookie('token')
     // State
     const user = ref<User | null>(null)
@@ -32,6 +33,7 @@ export const useAuthStore = defineStore('auth', () => {
         if (response.success && response.data.token) {
             token.value = response.data.token
             console.log("Fetched", token.value)
+            await nextTick()
             await fetchUser()
         }
     }
@@ -40,14 +42,14 @@ export const useAuthStore = defineStore('auth', () => {
         if (!token.value) return
 
         try {
-            const response = await $api<{ success: boolean, data: User }>('/me')
+            const response = await $api<ApiResponse<User>>('/me')
             if (response.success) {
                 user.value = response.data
             }
         } catch (error) {
-            // If /me fails (token expired), log them out
             token.value = null
             user.value = null
+            $toast.error('Session expired. Please log in again.')
         }
     }
 

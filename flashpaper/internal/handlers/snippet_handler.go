@@ -57,7 +57,7 @@ func (h *SnippetHandler) Create(c *gin.Context) {
 		return
 	}
 
-	fullLink := "/api/snippets/" + snippet.ID.String()
+	fullLink := "/snippets/" + snippet.ID.String()
 
 	utils.SendSuccess(c, http.StatusCreated, gin.H{
 		"message":    "Snippet created successfully",

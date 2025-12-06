@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { 
     MazFire, MazEye, MazTrash, MazDocumentDuplicate, 
-    MazClock, MazArrowTopRightOnSquare // <--- New Icon for "Open"
+    MazClock, MazArrowTopRightOnSquare
 } from '@maz-ui/icons'
 import type { DashboardStats, OverviewSnippet, PaginatedList, ApiResponse } from './types/dashboard'
+import MazDialog from 'maz-ui/components/MazDialog'
 
 definePageMeta({
     middleware: 'auth',
@@ -13,11 +14,21 @@ const { $api } = useNuxtApp()
 const { $toast } = useNuxtApp()
 const token = useCookie('token')
 
+
 // State
 const page = ref(1)
 const limit = ref(10)
+const isCreateModalOpen = ref(false)
 
-const [{ data: statsResponse, error: statsError }, { data: listResponse, refresh: refreshList, error: listError, pending: loadingList }] = await Promise.all([
+const onSnippetCreated = () => {
+    isCreateModalOpen.value = false
+    refreshList()
+}
+
+const [
+    { data: statsResponse, error: statsError }, 
+    { data: listResponse, refresh: refreshList, error: listError, pending: loadingList }
+] = await Promise.all([
     useAsyncData<ApiResponse<DashboardStats>>(
         'dashboard-stats',
         () => $api('/dashboard'),
@@ -59,7 +70,6 @@ const deleteSnippet = async (id: string) => {
 }
 
 // VISUAL HELPERS
-// Truncate UUID: "db420be3..." -> "db420..."
 const truncateId = (id: string) => id.substring(0, 8) + '...'
 
 // Progress Bar Math
@@ -102,10 +112,16 @@ const formatExpiresIn = (dateStr: string) => {
             <div>
                 <p class="text-3xl font-semibold text-white/40">Manage your <span class="text-primary">Active Secrets</span></p>
             </div>
-            <MazBtn to="/" color="primary" left-icon="plus" class="!text-background">
+            <MazBtn color="primary" left-icon="plus" @click="isCreateModalOpen = true">
                 <template #left-icon><MazFire class="w-5 h-5"/></template>
                 New Secret
             </MazBtn>
+
+            <MazDialog v-model="isCreateModalOpen" title="" no-header>
+                <div class="p-0">
+                    <SnippetCreateCard @created="onSnippetCreated" :show-background="false" />
+                </div>
+            </MazDialog>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
