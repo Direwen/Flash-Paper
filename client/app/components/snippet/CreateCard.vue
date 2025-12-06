@@ -15,6 +15,8 @@ const emit = defineEmits(['created']) // Let parent know something happened (e.g
 
 // Services
 const { $api, $toast } = useNuxtApp()
+const authStore = useAuthStore()
+const isGuest = computed(() => !authStore.user)
 
 // State
 const isLoading = ref(false)
@@ -206,7 +208,19 @@ const shareLink = computed(() => {
                 </div>
 
                 <div class="pt-2">
+                    <NuxtLink v-if="isGuest" to="/auth/login">
+                        <MazBtn 
+                            block 
+                            color="primary" 
+                            size="lg"
+                            class="font-bold tracking-wide shadow-lg shadow-primary/10"
+                        >
+                            <template #left-icon><MazLockClosed class="w-5 h-5"/></template>
+                            LOGIN TO CREATE
+                        </MazBtn>
+                    </NuxtLink>
                     <MazBtn 
+                        v-else
                         block 
                         color="primary" 
                         size="lg" 
