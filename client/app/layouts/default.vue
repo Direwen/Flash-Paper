@@ -193,15 +193,15 @@ const closeMenu = () => {
                 <ul class="space-y-2 text-sm text-white/50">
                 <li><NuxtLink to="/about" class="hover:text-primary transition-colors">How it Works</NuxtLink></li>
                 <li v-if="authStore.user"><NuxtLink to="/dashboard" class="hover:text-primary transition-colors">Dashboard</NuxtLink></li>
-                <li><NuxtLink to="/api-docs" class="hover:text-primary transition-colors">API Docs</NuxtLink></li>
+                <li><NuxtLink to="/" class="hover:text-primary transition-colors">API Docs</NuxtLink></li>
                 </ul>
             </div>
 
             <div>
                 <h4 class="font-bold text-white mb-4">Legal</h4>
                 <ul class="space-y-2 text-sm text-white/50">
-                <li><NuxtLink to="/privacy" class="hover:text-primary transition-colors">Privacy Policy</NuxtLink></li>
-                <li><NuxtLink to="/terms" class="hover:text-primary transition-colors">Terms of Service</NuxtLink></li>
+                <li><NuxtLink to="/" class="hover:text-primary transition-colors">Privacy Policy</NuxtLink></li>
+                <li><NuxtLink to="/" class="hover:text-primary transition-colors">Terms of Service</NuxtLink></li>
                 <li><a href="#" class="hover:text-primary transition-colors">Open Source</a></li>
                 </ul>
             </div>
