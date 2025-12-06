@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { MazFire, MazBars3, MazXMark, MazLockClosed, MazArrowRightOnRectangle, MazUser } from '@maz-ui/icons'
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
 
 const authStore = useAuthStore()
@@ -12,7 +14,7 @@ const isMobileMenuOpen = ref(false)
 // 2. Navigation Links (Computed based on Auth State)
 const navLinks = computed(() => {
     const links = [
-        { label: 'How it Works', to: '/#how-it-works' },
+        { label: 'How it Works', to: '/about' },
     ]
 
     // Only show Dashboard if logged in
@@ -134,7 +136,7 @@ const closeMenu = () => {
                             <span>{{ authStore.user.email }}</span>
                         </div>
                         <MazBtn 
-                            color="danger" 
+                            color="destructive" 
                             outline 
                             block 
                             @click="handleLogout"
@@ -144,7 +146,7 @@ const closeMenu = () => {
                     </div>
 
                     <div v-else class="mt-4 flex flex-col gap-4">
-                         <NuxtLink 
+                        <NuxtLink 
                             to="/auth/login"
                             @click="closeMenu"
                             class="text-lg font-medium text-white/80 text-center"
@@ -189,7 +191,7 @@ const closeMenu = () => {
             <div>
                 <h4 class="font-bold text-white mb-4">Product</h4>
                 <ul class="space-y-2 text-sm text-white/50">
-                <li><NuxtLink to="/#how-it-works" class="hover:text-primary transition-colors">How it Works</NuxtLink></li>
+                <li><NuxtLink to="/about" class="hover:text-primary transition-colors">How it Works</NuxtLink></li>
                 <li v-if="authStore.user"><NuxtLink to="/dashboard" class="hover:text-primary transition-colors">Dashboard</NuxtLink></li>
                 <li><NuxtLink to="/api-docs" class="hover:text-primary transition-colors">API Docs</NuxtLink></li>
                 </ul>

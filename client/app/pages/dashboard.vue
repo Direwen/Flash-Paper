@@ -3,7 +3,8 @@ import {
     MazFire, MazEye, MazTrash, MazDocumentDuplicate, 
     MazClock, MazArrowTopRightOnSquare
 } from '@maz-ui/icons'
-import type { DashboardStats, OverviewSnippet, PaginatedList, ApiResponse } from './types/dashboard'
+import type { DashboardStats, OverviewSnippet, PaginatedList } from '~/types/dashboard'
+import type { ApiResponse } from '~/types/response'
 import MazDialog from 'maz-ui/components/MazDialog'
 
 definePageMeta({
@@ -44,17 +45,17 @@ const [
 ])
 
 const stats = computed(() => statsResponse.value?.data || { active_snippets: 0, active_burnt_snippets: 0, total_views: 0 })
-const snippets = computed(() => listResponse.value?.data.data || [])
-const meta = computed(() => listResponse.value?.data.meta)
+const snippets = computed(() => listResponse.value?.data?.data || [])
+const meta = computed(() => listResponse.value?.data?.meta)
 
 const copyLink = (id: string) => {
-    const link = `${window.location.origin}/view/${id}`
+    const link = `${window.location.origin}/snippets/view/${id}`
     navigator.clipboard.writeText(link)
     $toast?.success('Copied to clipboard')
 }
 
 const openLink = (id: string) => {
-    const link = `/view/${id}`
+    const link = `/snippets/view/${id}`
     window.open(link, '_blank')
 }
 
