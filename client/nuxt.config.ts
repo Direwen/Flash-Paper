@@ -83,4 +83,22 @@ export default defineNuxtConfig({
       apiBase: "http://localhost:8080"
     }
   },
+  app: {
+    head: {
+      title: 'FlashPaper | Zero-Knowledge Secret Sharing',
+      htmlAttrs: {
+        lang: 'en',
+      },
+      link: [
+        // Ensure you put 'logo.png' inside the /public folder!
+        { rel: 'icon', type: 'image/png', href: '/logo.png' }
+      ],
+      meta: [
+        { 
+          name: 'description', 
+          content: 'Share sensitive data securely. End-to-end encrypted, self-destructing messages.' 
+        }
+      ],
+    }
+  },
 } as any)
