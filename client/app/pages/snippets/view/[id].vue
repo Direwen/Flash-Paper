@@ -24,8 +24,8 @@ const errorState = ref<string>("This secret has been burnt, expired, or never ex
 // Data Containers
 const secretContent = ref<string>('')
 const metadata = ref<{
-    title?: string, // Backend doesn't send this in meta, but sends in full reveal
-    language?: string, // Same as above
+    title?: string,
+    language?: string,
     owner_id: string | null,
     views_left: number,
     expires_at: string
@@ -151,11 +151,10 @@ const copyContent = () => {
             <div class="flex items-center justify-between mb-6">
                 <div>
                     <h2 class="text-2xl font-bold text-white">{{ metadata?.title || 'Untitled Secret' }}</h2>
-                    <p class="text-sm text-white/40 font-mono mt-1">ID: {{ id }}</p>
+                    <p class="text-sm text-white/40 font-mono mt-1">{{ id }}</p>
                 </div>
                 <MazBtn size="sm" color="secondary" @click="copyContent">
                     <template #left-icon><MazDocumentDuplicate class="w-4 h-4"/></template>
-                    Copy Content
                 </MazBtn>
             </div>
 
@@ -182,7 +181,7 @@ const copyContent = () => {
                     This message is burning...
                 </div>
                 <div class="mt-4">
-                    <MazBtn to="/" color="white" outline>Create Your Own</MazBtn>
+                    <MazBtn to="/" color="primary" outline>Create Your Own</MazBtn>
                 </div>
             </div>
         </div>

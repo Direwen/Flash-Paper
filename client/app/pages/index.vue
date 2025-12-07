@@ -19,9 +19,9 @@ const authStore = useAuthStore()
                     AES-256-GCM Encrypted
                 </div>
                 
-                <h1 class="text-5xl lg:text-7xl font-bold leading-tight tracking-tight">
+                <h1 class="text-3xl md:text-5xl font-bold leading-tight tracking-tight">
                     Share Secrets That <br />
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500 animate-pulse">
+                    <span class="text-4xl xs:text-5xl md:text-7xl text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500 animate-pulse">
                     Self-Destruct
                     </span>
                 </h1>

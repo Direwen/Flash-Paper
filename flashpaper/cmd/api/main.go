@@ -53,7 +53,11 @@ func main() {
 	r := gin.Default()
 	// Cors Config
 	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{os.Getenv("CLIENT_URL")}
+
+	config.AllowOrigins = []string{"http://localhost:3000"}
+	if clientURL := os.Getenv("CLIENT_URL"); clientURL != "" {
+		config.AllowOrigins = append(config.AllowOrigins, clientURL)
+	}
 	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE"}
 	config.AllowHeaders = []string{"Origin", "Content-Type", "Authorization"}
 	r.Use(cors.New(config))

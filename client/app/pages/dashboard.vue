@@ -6,6 +6,7 @@ import {
 import type { DashboardStats, OverviewSnippet, PaginatedList } from '~/types/dashboard'
 import type { ApiResponse } from '~/types/response'
 import MazDialog from 'maz-ui/components/MazDialog'
+import { MazTable, MazTableRow, MazTableCell } from 'maz-ui/components'
 
 definePageMeta({
     middleware: 'auth',
@@ -13,8 +14,6 @@ definePageMeta({
 
 const { $api } = useNuxtApp()
 const { $toast } = useNuxtApp()
-const token = useCookie('token')
-
 
 // State
 const page = ref(1)
@@ -26,24 +25,36 @@ const onSnippetCreated = () => {
     refreshList()
 }
 
-const [
-    { data: statsResponse, error: statsError }, 
-    { data: listResponse, refresh: refreshList, error: listError, pending: loadingList }
-] = await Promise.all([
-    useAsyncData<ApiResponse<DashboardStats>>(
-        'dashboard-stats',
-        () => $api('/dashboard'),
-        { server: false }
-    ),
-    useAsyncData<ApiResponse<PaginatedList<OverviewSnippet>>>(
-        'dashboard-snippets',
-        () => $api('/snippets', {
-            query: { page: page.value, limit: limit.value }
-        }),
-        { watch: [page, limit], server: false }
-    )
-])
+// Fetch Stats
+const { data: statsResponse, error: statsError } = useAsyncData<ApiResponse<DashboardStats>>(
+    'dashboard-stats',
+    () => $api('/dashboard'),
+    { 
+        server: false,
+        lazy: true
+    }
+)
 
+// Fetch List
+const { 
+    data: listResponse, 
+    refresh: refreshList, 
+    error: listError, 
+    status: listStatus 
+} = useAsyncData<ApiResponse<PaginatedList<OverviewSnippet>>>(
+    `dashboard-snippets-${page.value}-${limit.value}`,
+    () => $api('/snippets', {
+        query: { page: page.value, limit: limit.value }
+    }),
+    {
+        watch: [page, limit],
+        server: false,
+        lazy: true,
+        dedupe: 'defer' //to cancel out the same old requests which are still in progress 
+    }
+)
+
+const loadingList = computed(() => listStatus.value === 'pending' || listStatus.value === 'idle')
 const stats = computed(() => statsResponse.value?.data || { active_snippets: 0, active_burnt_snippets: 0, total_views: 0 })
 const snippets = computed(() => listResponse.value?.data?.data || [])
 const meta = computed(() => listResponse.value?.data?.meta)
@@ -151,78 +162,60 @@ const formatExpiresIn = (dateStr: string) => {
 
         <div class="bg-secondary border border-white/5 rounded-xl overflow-hidden shadow-2xl">
 
-            <div v-if="snippets.length === 0 && !loadingList" class="p-12 text-center text-white/30">
+
+            <div v-if="loadingList" class="p-12 w-full flex justify-center items-center text-white/30">
+                <MazSpinner color="warning" size="4em" />
+            </div>
+
+            <div v-else-if="snippets.length === 0 && !loadingList" class="p-12 text-center text-white/30">
                 <MazFire class="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>No active secrets found.</p>
             </div>
 
-            <div v-else class="overflow-x-auto">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-white/5 text-white/50 uppercase text-xs tracking-wider">
-                        <tr>
-                            <th class="px-6 py-4 font-medium">ID / Title</th>
-                            <th class="px-6 py-4 font-medium">Created</th>
-                            <th class="px-6 py-4 font-medium">Expires In</th>
-                            <th class="px-6 py-4 font-medium">Views Left</th>
-                            <th class="px-6 py-4 font-medium text-right">Actions</th>
-                        </tr>
-                    </thead>
-
-                    <tbody class="divide-y divide-white/5">
-                        <tr v-for="item in snippets" :key="item.id" class="group hover:bg-white/[0.02] transition-colors">
-                            
-                            <td class="px-6 py-4">
-                                <div class="font-medium text-white mb-0.5">{{ item.title || 'Untitled Secret' }}</div>
-                                <div class="text-xs font-mono text-white/30 group-hover:text-primary/70 transition-colors">
-                                    {{ truncateId(item.id) }}
+            <div v-else>
+                <MazTable :headers="['ID / Title', 'Created', 'Expires In', 'Views Left', 'Actions']">
+                    <MazTableRow v-for="item in snippets" :key="item.id">
+                        <MazTableCell>
+                            <div class="font-medium text-white mb-0.5">{{ item.title || 'Untitled Secret' }}</div>
+                            <div class="text-xs font-mono text-white/30">{{ truncateId(item.id) }}</div>
+                        </MazTableCell>
+                        <MazTableCell>
+                            <span class="text-white/60 font-mono text-xs">{{ formatRelativeTime(item.created_at) }}</span>
+                        </MazTableCell>
+                        <MazTableCell>
+                            <div class="flex items-center gap-2 text-white/80">
+                                <MazClock class="w-4 h-4 text-warning" />
+                                <span class="font-mono text-xs">{{ formatExpiresIn(item.expires_at) }}</span>
+                            </div>
+                        </MazTableCell>
+                        <MazTableCell>
+                            <div class="flex items-center gap-3">
+                                <div class="flex-grow h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                    <div 
+                                        class="h-full bg-primary transition-all duration-500 shadow-[0_0_10px_rgba(251,191,36,0.5)]" 
+                                        :style="{ width: `${getProgressWidth(item.current_views, item.max_views)}%` }"
+                                    ></div>
                                 </div>
-                            </td>
-
-                            <td class="px-6 py-4 text-white/60 font-mono text-xs">
-                                {{ formatRelativeTime(item.created_at) }}
-                            </td>
-
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-2 text-white/80">
-                                    <MazClock class="w-4 h-4 text-warning" />
-                                    <span class="font-mono text-xs">{{ formatExpiresIn(item.expires_at) }}</span>
-                                </div>
-                            </td>
-
-                            <td class="px-6 py-4 w-48">
-                                <div class="flex items-center gap-3">
-                                    <div class="flex-grow h-1.5 bg-white/10 rounded-full overflow-hidden">
-                                        <div 
-                                            class="h-full bg-primary transition-all duration-500 shadow-[0_0_10px_rgba(251,191,36,0.5)]" 
-                                            :style="{ width: `${getProgressWidth(item.current_views, item.max_views)}%` }"
-                                        ></div>
-                                    </div>
-                                    <span class="text-xs font-mono text-white/60 whitespace-nowrap">
-                                        <span class="text-white">{{ item.max_views - item.current_views }}</span>/{{ item.max_views }}
-                                    </span>
-                                </div>
-                            </td>
-
-                            <td class="px-6 py-4 text-right">
-                                <div class="flex items-center justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
-                                    
-                                    <button @click="copyLink(item.id)" class="p-2 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="Copy Link">
-                                        <MazDocumentDuplicate class="w-4 h-4"/>
-                                    </button>
-                                    
-                                    <button @click="openLink(item.id)" class="p-2 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors" title="View Secret">
-                                        <MazArrowTopRightOnSquare class="w-4 h-4"/>
-                                    </button>
-
-                                    <button @click="deleteSnippet(item.id)" class="p-2 hover:text-danger hover:bg-danger/10 rounded-lg transition-colors" title="Burn Secret">
-                                        <MazTrash class="w-4 h-4"/>
-                                    </button>
-                                </div>
-                            </td>
-
-                        </tr>
-                    </tbody>
-                </table>
+                                <span class="text-xs font-mono text-white/60 whitespace-nowrap">
+                                    <span class="text-white">{{ item.max_views - item.current_views }}</span>/{{ item.max_views }}
+                                </span>
+                            </div>
+                        </MazTableCell>
+                        <MazTableCell>
+                            <div class="flex items-center justify-end gap-1">
+                                <button @click="copyLink(item.id)" class="p-2 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="Copy Link">
+                                    <MazDocumentDuplicate class="w-4 h-4"/>
+                                </button>
+                                <button @click="openLink(item.id)" class="p-2 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors" title="View Secret">
+                                    <MazArrowTopRightOnSquare class="w-4 h-4"/>
+                                </button>
+                                <button @click="deleteSnippet(item.id)" class="p-2 hover:text-danger hover:bg-danger/10 rounded-lg transition-colors" title="Burn Secret">
+                                    <MazTrash class="w-4 h-4"/>
+                                </button>
+                            </div>
+                        </MazTableCell>
+                    </MazTableRow>
+                </MazTable>
             </div>
 
             <div class="flex justify-center items-center py-4">

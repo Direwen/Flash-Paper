@@ -130,11 +130,11 @@ const shareLink = computed(() => {
                     <p class="text-white/40 text-sm mt-1">This link will self-destruct after use.</p>
                 </div>
 
-                <div class="bg-black/30 border border-primary/30 rounded-lg p-4 flex items-center gap-3">
-                    <div class="flex-grow font-mono text-primary text-sm truncate">
+                <div class="bg-black/30 border border-primary/30 rounded-lg p-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 overflow-hidden">
+                    <div class="min-w-0 flex-grow font-mono text-primary text-sm break-all sm:break-normal sm:truncate">
                         {{ shareLink }}
                     </div>
-                    <MazBtn size="sm" color="primary" @click="copyLink">
+                    <MazBtn size="sm" color="primary" class="shrink-0" @click="copyLink">
                         <MazDocumentDuplicate class="w-4 h-4" />
                     </MazBtn>
                 </div>

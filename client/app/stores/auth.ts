@@ -14,9 +14,8 @@ export const useAuthStore = defineStore('auth', () => {
     // State
     const user = ref<User | null>(null)
     const isLoading = ref(false)
-    // 3. Actions
+    // Actions
     const register = async (credentials: any) => {
-        // $api automatically uses baseURL
         await $api('/auth/register', {
             method: 'POST',
             body: credentials
@@ -28,11 +27,9 @@ export const useAuthStore = defineStore('auth', () => {
         method: 'POST',
         body: credentials
         })
-        console.log(response)
-        // Set the cookie. The plugin will detect this change for future requests!
         if (response.success && response.data.token) {
             token.value = response.data.token
-            console.log("Fetched", token.value)
+            // Wait for cookie to sync before fetching user
             await nextTick()
             await fetchUser()
         }
@@ -58,7 +55,7 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = null
     }
 
-    // 4. Initialize (Run this when app starts)
+    // Initialize
     const initAuth = async () => {
         if (token.value && !user.value) {
             await fetchUser()

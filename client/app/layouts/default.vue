@@ -8,10 +8,10 @@ const authStore = useAuthStore()
 const router = useRouter()
 const { $toast } = useNuxtApp()
 
-// 1. Mobile Menu State
+// Mobile Menu State
 const isMobileMenuOpen = ref(false)
 
-// 2. Navigation Links (Computed based on Auth State)
+// Navigation Links
 const navLinks = computed(() => {
     const links = [
         { label: 'How it Works', to: '/about' },
@@ -25,7 +25,7 @@ const navLinks = computed(() => {
     return links
 })
 
-// 3. Logout Action
+// Logout Action
 const handleLogout = () => {
     closeMenu()
     $toast?.message(`See you again, ${authStore.user?.email}`)
@@ -208,7 +208,7 @@ const closeMenu = () => {
 
             <div class="text-right flex flex-col justify-end">
                 <p class="text-xs text-white/20">
-                    v1.0.0 · Built with paranoia
+                    v1.0.0 · Developed by Direwen
                 </p>
                 <p class="text-xs text-white/20 mt-2">
                     &copy; {{ new Date().getFullYear() }} FlashPaper.
