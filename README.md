@@ -64,18 +64,19 @@ erDiagram
     USERS {
         uuid id PK
         string email UK
-        string password_hash
+        string password
         timestamp created_at
+        timestamp updated_at
     }
 
     SNIPPETS {
         uuid id PK
         uuid user_id FK "Nullable"
-        text content "AES-256 Encrypted Blob"
+        string content "AES-256 Encrypted Blob"
         string title
         string language
-        int max_views
         int current_views
+        int max_views
         timestamp expires_at "Indexed for Janitor"
         timestamp created_at
     }
@@ -87,36 +88,120 @@ The core complexity lies in the **"Reveal & Burn"** logic. To ensure a secret wi
 
 📊 [View Sequence Diagram](docs/design/system/sequence_diagram.png)
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User
-    participant API as Go API (Gin)
-    participant DB as Postgres (Neon)
+```plantuml
+@startuml
+!theme plain
+autonumber
 
-    Note over API, DB: Critical Section: Race Condition Handling
+actor "User" as User
+participant "Go API (Gin)" as API
+database "Postgres (Neon)" as DB
+control "Janitor (Goroutine)" as Janitor
 
-    User->>API: GET /snippets/:id (Reveal Request)
-    
-    API->>DB: BEGIN TRANSACTION
-    API->>DB: SELECT * FROM snippets WHERE id=... FOR UPDATE
-    Note right of DB: ROW LOCKED. Concurrent requests wait.
-    
-    DB-->>API: Snippet Record
+box "Application Logic" #LightBlue
+participant API
+participant Janitor
+end box
 
-    alt Record Not Found
-        API->>DB: ROLLBACK
-        API-->>User: 404 Not Found
-    else Expired or Burnt
-        API->>DB: ROLLBACK
-        API-->>User: 410 Gone (Self-Destructed)
-    else Valid
-        API->>API: Increment View Count
-        API->>DB: UPDATE snippets SET current_views = +1
-        API->>DB: COMMIT
-        Note right of DB: Lock Released
-        API-->>User: 200 OK (Encrypted Data)
-    end
+== 1. Authentication & Session ==
+
+group Public Auth
+User -> API: POST /auth/register\n{email, password}
+API -> DB: Create User (Hash Password)
+DB --> API: Success
+API --> User: 201 Created
+
+User -> API: POST /auth/login\n{email, password}
+API -> DB: Fetch User & Compare Hash
+API -> API: Generate JWT (Sign with Secret)
+API --> User: 200 OK { token }
+end
+
+group Protected User Info
+User -> API: GET /me (Auth Header)
+API -> API: Verify JWT & Extract UserID
+API --> User: 200 OK { user_profile }
+end
+
+== 2. Dashboard & Creation (Protected) ==
+
+User -> API: GET /dashboard
+API -> DB: Count active, burnt, total views (WHERE user_id=X)
+API --> User: 200 OK { stats }
+
+User -> API: GET /snippets (Page, Limit)
+API -> DB: Select snippets (Pagination + UserID Filter)
+API --> User: 200 OK { data: [...], meta: {...} }
+
+User -> API: POST /snippets\n{content, settings}
+activate API
+API -> API: Encrypt content (AES-GCM)
+API -> DB: INSERT into snippets (user_id, encrypted_blob...)
+DB --> API: Success
+API --> User: 201 Created { link }
+deactivate API
+
+== 3. View Flow: Step A (Metadata Peek) ==
+
+User -> API: GET /snippets/:id/meta
+activate API
+note right of API: Public Route. No Burning.
+API -> DB: SELECT id, owner_id, expires_at, views_left FROM snippets
+DB --> API: Metadata
+API --> User: 200 OK { owner_id, views_left... }
+deactivate API
+
+== 4. View Flow: Step B (Reveal & Burn) ==
+
+User -> API: GET /snippets/:id
+activate API
+note right of API: Critical Section (Race Condition Handling)
+API -> DB: BEGIN TRANSACTION
+API -> DB: SELECT * FROM snippets WHERE id={uuid} FOR UPDATE
+note right of DB: Row LOCKED. Concurrent requests block here.
+DB --> API: Returns Snippet Record
+
+alt Record Not Found
+API -> DB: ROLLBACK
+API --> User: 404 Not Found
+else Expired OR Views Limit Reached
+API -> DB: ROLLBACK
+API --> User: 410 Gone (Snippet Burnt)
+else Valid
+API -> API: new_count = current_views + 1
+API -> DB: UPDATE snippets SET current_views = new_count
+API -> DB: COMMIT TRANSACTION
+note right of DB: Lock Released
+API -> API: Decrypt content
+API --> User: 200 OK { decrypted_content }
+end
+deactivate API
+
+== 5. Manual Delete (Protected) ==
+
+User -> API: DELETE /snippets/:id
+activate API
+API -> API: Verify JWT & Extract UserID
+API -> DB: DELETE FROM snippets WHERE id=X AND user_id=Y
+DB --> API: Rows Affected
+
+alt Deleted
+API --> User: 200 OK
+else Not Found / Not Owner
+API --> User: 404 / 403
+end
+deactivate API
+
+== 6. The Janitor (Background Cleanup) ==
+
+loop Every X Minutes (Ticker)
+Janitor -> DB: DELETE FROM snippets WHERE expires_at < NOW()
+activate DB
+DB --> Janitor: Rows Affected
+deactivate DB
+end
+
+@enduml
 ```
 
 -----
