@@ -173,7 +173,7 @@ const formatExpiresIn = (dateStr: string) => {
             </div>
 
             <div v-else>
-                <MazTable :headers="['ID / Title', 'Created', 'Expires In', 'Views Left', 'Actions']">
+                <MazTable :scrollable="true" :headers="['ID / Title', 'Created', 'Expires In', 'Views Left', 'Actions']">
                     <MazTableRow v-for="item in snippets" :key="item.id">
                         <MazTableCell>
                             <div class="font-medium text-white mb-0.5">{{ item.title || 'Untitled Secret' }}</div>

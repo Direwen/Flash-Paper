@@ -17,5 +17,9 @@ export const useSnippetDraftStore = defineStore('snippetDraft', () => {
         draft.value.expiresIn = 60
     }
 
-    return { draft, hasDraft, clear }
+    return { 
+        draft, 
+        hasDraft, 
+        clear 
+    }
 })
