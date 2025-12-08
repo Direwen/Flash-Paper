@@ -16,7 +16,7 @@ const handleRegister = async () => {
     isLoading.value = true
     try {
         await authStore.register(form.value)
-        $toast?.success("Created Successfully")
+        $toast?.success("Account created! Please log in.")
         router.push('/')
     } catch (error) {
         console.error(error)
