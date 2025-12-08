@@ -19,26 +19,26 @@ const authStore = useAuthStore()
                     AES-256-GCM Encrypted
                 </div>
                 
-                <h1 class="text-3xl md:text-5xl font-bold leading-tight tracking-tight">
+                <h1 class="w-full xs:w-6/12 sm:w-8/12 sm:mx-auto lg:w-full text-3xl md:text-5xl text-left lg:text-left font-bold leading-tight tracking-tight">
                     Share Secrets That <br />
-                    <span class="text-4xl xs:text-5xl md:text-7xl text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500 animate-pulse">
+                    <span class="inline-block w-full text-right lg:text-left lg:w-auto text-4xl xs:text-5xl md:text-7xl text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500 animate-pulse">
                     Self-Destruct
                     </span>
                 </h1>
                 
-                <p class="text-lg text-white/60 max-w-lg leading-relaxed">
+                <p class="text-lg text-white/60 w-full sm:w-10/12 sm:mx-auto lg:w-full leading-relaxed">
                     Send passwords, API keys, and private data that burns after reading. 
                     We never store your keys, so we can never see your data.
                 </p>
 
-                <div class="flex flex-wrap items-center gap-6 text-sm font-medium text-white/40 pt-2">
+                <div class="flex flex-wrap justify-center lg:justify-start items-center gap-6 text-sm font-medium text-white/40 pt-2">
                     <div class="flex items-center gap-2">
-                    <MazShieldCheck class="w-5 h-5 text-primary" />
-                    <span>No Server Storage</span>
+                        <MazShieldCheck class="w-5 h-5 text-primary" />
+                        <span>No Server Storage</span>
                     </div>
                     <div class="flex items-center gap-2">
-                    <MazClock class="w-5 h-5 text-warning" />
-                    <span>Time-Based Expiry</span>
+                        <MazClock class="w-5 h-5 text-warning" />
+                        <span>Time-Based Expiry</span>
                     </div>
                 </div>
             </div>

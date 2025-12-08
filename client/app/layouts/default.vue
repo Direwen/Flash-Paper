@@ -172,48 +172,48 @@ const closeMenu = () => {
         </main>
 
         <footer class="border-t border-white/5 bg-secondary/30 py-12 mt-auto">
-            <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-3 gap-8">
             
-            <div class="col-span-1 md:col-span-1">
-                <div class="flex items-center gap-2 mb-4">
-                    <MazFire class="w-8 h-8 text-primary group-hover:text-primary/80 transition-colors" />
-                    <span class="font-bold text-lg">FlashPaper</span>
+                <div class="col-span-full md:col-span-1">
+                    <div class="flex items-center gap-2 mb-4">
+                        <MazFire class="w-8 h-8 text-primary group-hover:text-primary/80 transition-colors" />
+                        <span class="font-bold text-lg">FlashPaper</span>
+                    </div>
+                    <p class="text-sm text-white/40 leading-relaxed">
+                    Zero-knowledge encrypted message sharing. Your secrets burn after reading, leaving no trace.
+                    </p>
+                    <div class="flex gap-2 mt-6 text-xs text-primary/80">
+                        <MazLockClosed class="w-4 h-4" />
+                        <span class="flex items-center gap-1">End-to-End Encrypted</span>
+                    </div>
                 </div>
-                <p class="text-sm text-white/40 leading-relaxed">
-                Zero-knowledge encrypted message sharing. Your secrets burn after reading, leaving no trace.
-                </p>
-                <div class="flex gap-2 mt-6 text-xs text-primary/80">
-                    <MazLockClosed class="w-4 h-4" />
-                    <span class="flex items-center gap-1">End-to-End Encrypted</span>
+
+                <div class="flex flex-col justify-start items-center">
+                    <h4 class="font-bold text-white mb-4">Product</h4>
+                    <ul class="space-y-2 text-sm text-white/50">
+                    <li><NuxtLink to="/about" class="hover:text-primary transition-colors">How it Works</NuxtLink></li>
+                    <li v-if="authStore.user"><NuxtLink to="/dashboard" class="hover:text-primary transition-colors">Dashboard</NuxtLink></li>
+                    <li><NuxtLink to="/" class="hover:text-primary transition-colors">API Docs</NuxtLink></li>
+                    </ul>
                 </div>
-            </div>
 
-            <div>
-                <h4 class="font-bold text-white mb-4">Product</h4>
-                <ul class="space-y-2 text-sm text-white/50">
-                <li><NuxtLink to="/about" class="hover:text-primary transition-colors">How it Works</NuxtLink></li>
-                <li v-if="authStore.user"><NuxtLink to="/dashboard" class="hover:text-primary transition-colors">Dashboard</NuxtLink></li>
-                <li><NuxtLink to="/" class="hover:text-primary transition-colors">API Docs</NuxtLink></li>
-                </ul>
-            </div>
+                <div class="flex flex-col justify-start items-center">
+                    <h4 class="font-bold text-white mb-4">Legal</h4>
+                    <ul class="space-y-2 text-sm text-white/50">
+                    <li><NuxtLink to="/" class="hover:text-primary transition-colors">Privacy Policy</NuxtLink></li>
+                    <li><NuxtLink to="/" class="hover:text-primary transition-colors">Terms of Service</NuxtLink></li>
+                    <li><a href="#" class="hover:text-primary transition-colors">Open Source</a></li>
+                    </ul>
+                </div>
 
-            <div>
-                <h4 class="font-bold text-white mb-4">Legal</h4>
-                <ul class="space-y-2 text-sm text-white/50">
-                <li><NuxtLink to="/" class="hover:text-primary transition-colors">Privacy Policy</NuxtLink></li>
-                <li><NuxtLink to="/" class="hover:text-primary transition-colors">Terms of Service</NuxtLink></li>
-                <li><a href="#" class="hover:text-primary transition-colors">Open Source</a></li>
-                </ul>
-            </div>
-
-            <div class="text-right flex flex-col justify-end">
-                <p class="text-xs text-white/20">
-                    v1.0.0 · Developed by Direwen
-                </p>
-                <p class="text-xs text-white/20 mt-2">
-                    &copy; {{ new Date().getFullYear() }} FlashPaper.
-                </p>
-            </div>
+                <div class="text-center flex flex-col justify-end col-span-full">
+                    <p class="text-xs text-white/20">
+                        v1.0.0 · Developed by Direwen
+                    </p>
+                    <p class="text-xs text-white/20 mt-2">
+                        &copy; {{ new Date().getFullYear() }} FlashPaper.
+                    </p>
+                </div>
             </div>
         </footer>
 
