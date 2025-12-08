@@ -16,20 +16,15 @@ const emit = defineEmits(['created']) // Let parent know something happened (e.g
 // Services
 const { $api, $toast } = useNuxtApp()
 const authStore = useAuthStore()
+const draftStore = useSnippetDraftStore()
 const isGuest = computed(() => !authStore.user)
 
 // State
 const isLoading = ref(false)
 const createdSnippet = ref<any>(null) // Stores the result after success
 
-// Form Data
-const form = ref({
-    content: '',
-    title: '',
-    language: 'text',
-    maxViews: 1,
-    expiresIn: 60, // Default 1 hour
-})
+// Form Data (backed by Pinia store for persistence across login)
+const form = draftStore.draft
 
 // Options
 const languageOptions = [
@@ -59,7 +54,14 @@ const viewOptions = [
 
 // Actions
 const handleSubmit = async () => {
-    if (!form.value.content) {
+    
+    if (!form.title) {
+        $toast.error("Title is required")
+        return
+    }
+
+
+    if (!form.content) {
         $toast.error("Content is required")
         return
     }
@@ -69,11 +71,11 @@ const handleSubmit = async () => {
         const response: any = await $api('/snippets', {
             method: 'POST',
             body: {
-                content: form.value.content,
-                title: form.value.title,
-                language: form.value.language,
-                max_views: form.value.maxViews,
-                expires_in: form.value.expiresIn,
+                content: form.content,
+                title: form.title,
+                language: form.language,
+                max_views: form.maxViews,
+                expires_in: form.expiresIn,
             }
         })
         
@@ -86,6 +88,7 @@ const handleSubmit = async () => {
         $toast.error("Failed to create secret")
     } finally {
         isLoading.value = false
+        draftStore.clear()
     }
 }
 
@@ -100,9 +103,7 @@ const copyLink = () => {
 
 const resetForm = () => {
     createdSnippet.value = null
-    form.value.content = ''
-    form.value.title = ''
-    form.value.language = 'text'
+    draftStore.clear()
 }
 
 const shareLink = computed(() => {
