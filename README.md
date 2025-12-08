@@ -1,6 +1,6 @@
 # ⚡ FlashPaper
 
-> **Zero-Knowledge, Self-Destructing Message Sharing Service.**
+> **Secure, Self-Destructing Message Sharing Service.**
 > *Chingu Voyage Tier 3 (Fullstack) Submission*
 
 [![Go](https://img.shields.io/badge/Backend-Go-00ADD8?style=flat&logo=go)](https://golang.org/)
@@ -32,8 +32,8 @@
 ### 🔑 Evaluator Credentials
 
 To test the **Dashboard** and **Protected Routes**, use this account:
-* **Email:** `evaluator@chingu.io`
-* **Password:** `chingu123`
+* **Email:** `test@gmail.com`
+* **Password:** `password`
 
 ---
 
@@ -41,7 +41,7 @@ To test the **Dashboard** and **Protected Routes**, use this account:
 
 **FlashPaper** is a secure "Pastebin" alternative designed for sending sensitive data (passwords, API keys, config files) over insecure channels.
 
-Unlike standard databases, FlashPaper operates on a **Zero-Knowledge** architecture. Encryption happens entirely in the browser (Client-Side) using **AES-256-GCM**. The server stores only the encrypted blob and never sees the decryption key, which is passed via the URL fragment (`#`) and never sent over the network.
+FlashPaper uses **server-side encryption** with **AES-256-GCM** to protect your data at rest. When you create a secret, the backend encrypts it before storing in the database. Combined with self-destruction policies, your sensitive data is protected from database breaches and automatically purged after use.
 
 ### Key Features
 * **🔥 Self-Destruction:** Snippets can be set to "burn" after **1 view** or specific time limits.
@@ -116,9 +116,9 @@ The core complexity lies in the **"Reveal & Burn"** logic. To ensure a secret wi
 
 Tier 3 requires CRUD, but FlashPaper implements **CRD** (Create, Read, Delete). The "Update" operation is intentionally omitted for security integrity. Once a secret is encrypted and armed, allowing modifications would break the chain of trust and potentially allow an attacker to swap the ciphertext.
 
-### Client-Side Encryption
+### Server-Side Encryption
 
-We use the Web Crypto API to generate a key in the browser. This key is appended to the URL as a hash (`#key`). Since hash fragments are not sent to the server in HTTP requests, the backend physically cannot decrypt the data even if subpoenaed.
+All secrets are encrypted on the backend using AES-256-GCM before being stored in the database. The encryption key is managed server-side via environment variables. This protects data at rest—if the database is compromised, attackers only see encrypted blobs, not plaintext secrets.
 
 ### The "Lazy" Loading Pattern
 
@@ -132,12 +132,20 @@ You can run the entire stack locally using Docker Compose.
 
 ### Prerequisites
 
-  * Docker & Docker Compose
-  * Node.js (for frontend development)
+* Docker & Docker Compose
+* Node.js (for frontend development)
 
-### Environment Variables
+### 1. Clone the Repo
+
+```bash
+git clone https://github.com/Direwen/Flash-Paper.git
+cd Flash-Paper
+```
+
+### 2. Configure Environment Variables
 
 **Backend (`flashpaper/.env`):**
+
 ```env
 # Server
 PORT=8080
@@ -164,18 +172,12 @@ TOKEN_EXPIRATION=24h
 ```
 
 **Frontend (`client/.env`):**
+
 ```env
 NUXT_PUBLIC_API_BASE=http://localhost:8080
 ```
 
-### 1\. Clone the Repo
-
-```bash
-git clone https://github.com/Direwen/Flash-Paper.git
-cd Flash-Paper
-```
-
-### 2\. Run with Docker (Recommended)
+### 3. Run Backend with Docker (Recommended)
 
 This spins up a local Postgres instance and the Go API.
 
@@ -186,7 +188,7 @@ docker-compose -f docker-compose.local.yml up --build
 
 The API will be available at `http://localhost:8080`.
 
-### 3\. Run Frontend
+### 4. Run Frontend
 
 In a new terminal:
 
